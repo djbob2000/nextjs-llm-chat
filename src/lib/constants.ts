@@ -1,30 +1,9 @@
 export const AVAILABLE_MODELS = [
-  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini", provider: "OpenAI" },
-  { id: "openai/gpt-4o", name: "GPT-4o", provider: "OpenAI" },
-  {
-    id: "anthropic/claude-3.5-sonnet",
-    name: "Claude 3.5 Sonnet",
-    provider: "Anthropic",
-  },
-  {
-    id: "anthropic/claude-3-haiku",
-    name: "Claude 3 Haiku",
-    provider: "Anthropic",
-  },
-  {
-    id: "google/gemini-2.0-flash-001",
-    name: "Gemini 2.0 Flash",
-    provider: "Google",
-  },
-  { id: "google/gemini-1.5-pro", name: "Gemini 1.5 Pro", provider: "Google" },
-  {
-    id: "meta-llama/llama-3.1-70b-instruct",
-    name: "Llama 3.1 70B",
-    provider: "Meta",
-  },
+  { id: "openrouter/free", name: "Free", provider: "OpenRouter" },
 ];
 
-export const DEFAULT_MODEL = "openai/gpt-4o-mini";
+export const DEFAULT_MODEL = "openrouter/free";
+export const TITLE_GENERATION_MODEL = "openrouter/free";
 
 export const DEFAULT_USER_EMAIL =
   process.env.DEFAULT_USER_EMAIL || "admin@llmchat.local";

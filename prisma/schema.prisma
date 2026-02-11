@@ -31,7 +31,7 @@ model Conversation {
   id        String    @id @default(cuid())
   title     String    @default("New Chat")
   userId    String
-  model     String    @default("openai/gpt-4o-mini")
+  model     String    @default("openrouter/free")
   systemPrompt String?
   temperature Float   @default(0.7)
   maxTokens   Int     @default(4096)
