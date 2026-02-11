@@ -1,7 +1,34 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function ChatPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCreateChat = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "New Chat" }),
+      });
+
+      if (response.ok) {
+        const conversation = await response.json();
+        router.push(`/chat/${conversation.id}`);
+      }
+    } catch (error) {
+      console.error("Failed to create conversation:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center space-y-4 p-8 text-center">
       <div className="rounded-full bg-muted p-6">
@@ -13,8 +40,20 @@ export default function ChatPage() {
           Select a conversation from the sidebar or start a new one to begin.
         </p>
       </div>
-      <Button size="lg" className="mt-4">
-        Start New Conversation
+      <Button
+        size="lg"
+        className="mt-4"
+        onClick={handleCreateChat}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Creating...
+          </>
+        ) : (
+          "Start New Conversation"
+        )}
       </Button>
     </div>
   );

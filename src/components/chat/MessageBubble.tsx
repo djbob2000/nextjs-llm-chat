@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Message } from "@prisma/client";
+import { User, Bot } from "lucide-react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ToolCallDisplay } from "./ToolCallDisplay";
 
@@ -37,31 +38,42 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     >
       <div
         className={cn(
-          "max-w-[80%] rounded-2xl px-4 py-3 shadow-sm",
-          isUser
-            ? "bg-primary text-primary-foreground rounded-tr-none"
-            : "bg-muted text-muted-foreground rounded-tl-none",
-          isSystem &&
-            "bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-200 border border-orange-200 dark:border-orange-800",
+          "flex gap-3 max-w-[80%]",
+          isUser ? "flex-row-reverse" : "flex-row",
         )}
       >
-        <div className="text-xs font-semibold mb-1 opacity-70">
-          {message.role.toUpperCase()}
+        <div
+          className={cn(
+            "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border",
+            isUser ? "bg-background" : "bg-primary/10 text-primary",
+          )}
+        >
+          {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
         </div>
+        <div
+          className={cn(
+            "rounded-xl px-4 py-3 shadow-sm",
+            isUser
+              ? "bg-muted text-foreground"
+              : "bg-transparent text-foreground px-0 shadow-none",
+            isSystem &&
+              "bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-200 border border-orange-200 dark:border-orange-800",
+          )}
+        >
+          {message.content && <MarkdownRenderer content={message.content} />}
 
-        {message.content && <MarkdownRenderer content={message.content} />}
-
-        {message.toolCalls && Array.isArray(message.toolCalls) && (
-          <div className="mt-2 space-y-2">
-            {(message.toolCalls as any[]).map((tc, idx) => (
-              <ToolCallDisplay
-                key={tc.id || idx}
-                toolName={tc.function.name}
-                args={tc.function.arguments}
-              />
-            ))}
-          </div>
-        )}
+          {message.toolCalls && Array.isArray(message.toolCalls) && (
+            <div className="mt-2 space-y-2">
+              {(message.toolCalls as any[]).map((tc, idx) => (
+                <ToolCallDisplay
+                  key={tc.id || idx}
+                  toolName={tc.function.name}
+                  args={tc.function.arguments}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
