@@ -7,6 +7,7 @@ import { ChatMessage } from "@/lib/llm/types";
 import { toolRegistry } from "@/lib/llm/tools";
 import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeContent, MAX_MESSAGES_PER_REQUEST } from "@/lib/sanitize";
+import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/lib/constants";
 import { z } from "zod";
 
 const MAX_ITERATIONS = 5;
@@ -107,8 +108,14 @@ export const POST = auth(async (req) => {
         while (currentIteration < MAX_ITERATIONS) {
           currentIteration++;
 
+          // Ensure model is valid
+          let targetModel = model || conversation.model;
+          if (!AVAILABLE_MODELS.some((m) => m.id === targetModel)) {
+            targetModel = DEFAULT_MODEL;
+          }
+
           const stream = await openRouter.chat({
-            model: model || conversation.model,
+            model: targetModel,
             messages: llmHistory,
             temperature: temperature ?? conversation.temperature,
             maxTokens: maxTokens ?? conversation.maxTokens,
@@ -119,6 +126,7 @@ export const POST = auth(async (req) => {
           let iterationContent = "";
           let toolCalls: any[] = [];
           let isToolCall = false;
+          let modelNameSent = false;
 
           try {
             while (true) {
@@ -135,6 +143,20 @@ export const POST = auth(async (req) => {
 
                   try {
                     const json = JSON.parse(data);
+
+                    // Inject Model Name at the start
+                    if (!modelNameSent && json.model) {
+                      const modelHeader = `> Model: ${json.model}\n\n`;
+                      iterationContent += modelHeader;
+                      finalAssistantContent += modelHeader;
+                      controller.enqueue(
+                        encoder.encode(
+                          `data: ${JSON.stringify({ type: "token", content: modelHeader })}\n\n`,
+                        ),
+                      );
+                      modelNameSent = true;
+                    }
+
                     const delta = json.choices?.[0]?.delta;
 
                     if (delta?.content) {
