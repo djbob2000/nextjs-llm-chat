@@ -3,32 +3,85 @@ import { auth } from "@/lib/auth";
 import { openRouter } from "@/lib/llm/openrouter";
 import { ConversationRepository } from "@/lib/repositories/conversation.repository";
 import { MessageRepository } from "@/lib/repositories/message.repository";
-import { ChatMessage, ToolCall } from "@/lib/llm/types";
+import { ChatMessage } from "@/lib/llm/types";
 import { toolRegistry } from "@/lib/llm/tools";
+import { rateLimit } from "@/lib/rate-limit";
+import { sanitizeContent, MAX_MESSAGES_PER_REQUEST } from "@/lib/sanitize";
+import { z } from "zod";
 
 export const runtime = "edge";
 
 const MAX_ITERATIONS = 5;
 
+const ChatRequestSchema = z.object({
+  conversationId: z.string().uuid(),
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "assistant", "system", "tool"]),
+      content: z.string().nullable(),
+      toolCalls: z.any().optional(),
+      toolCallId: z.string().optional(),
+    }),
+  ),
+  model: z.string().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+  maxTokens: z.number().optional(),
+});
+
 export const POST = auth(async (req) => {
-  if (!req.auth?.user?.id) {
+  const userId = req.auth?.user?.id;
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const { conversationId, messages, model, temperature, maxTokens } =
-      await req.json();
+  // Rate Limiting
+  const limitResult = await rateLimit(req, userId);
+  if (!limitResult.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again in a minute." },
+      { status: 429 },
+    );
+  }
 
-    if (!conversationId || !messages) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  try {
+    const body = await req.json();
+
+    // Zod Validation
+    const validation = ChatRequestSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: validation.error.format() },
+        { status: 400 },
+      );
+    }
+
+    const { conversationId, messages, model, temperature, maxTokens } =
+      validation.data;
+
+    // Safety: limit history length
+    if (messages.length > MAX_MESSAGES_PER_REQUEST) {
+      return NextResponse.json(
+        { error: "Chat history too long" },
+        { status: 400 },
+      );
     }
 
     const conversation = await ConversationRepository.findById(conversationId);
-    if (!conversation || conversation.userId !== req.auth.user.id) {
+    if (!conversation || conversation.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const llmHistory: ChatMessage[] = messages.map((m: any) => ({
+    // Sanitize last message if user
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.role === "user" && lastMessage.content) {
+      try {
+        lastMessage.content = sanitizeContent(lastMessage.content);
+      } catch (e: any) {
+        return NextResponse.json({ error: e.message }, { status: 400 });
+      }
+    }
+
+    const llmHistory: ChatMessage[] = messages.map((m) => ({
       role: m.role,
       content: m.content,
       toolCalls: m.toolCalls,
@@ -123,7 +176,6 @@ export const POST = auth(async (req) => {
             }
 
             if (isToolCall) {
-              // Handle Tool Calls
               const assistantMsg: ChatMessage = {
                 role: "assistant",
                 content: iterationContent || null,
@@ -139,14 +191,12 @@ export const POST = auth(async (req) => {
 
               llmHistory.push(assistantMsg);
 
-              // Notify client about tool calls
               controller.enqueue(
                 encoder.encode(
                   `data: ${JSON.stringify({ type: "tool_calls", toolCalls: assistantMsg.toolCalls })}\n\n`,
                 ),
               );
 
-              // Execute Tools
               for (const tc of assistantMsg.toolCalls!) {
                 let args = {};
                 try {
@@ -165,7 +215,6 @@ export const POST = auth(async (req) => {
                 };
                 llmHistory.push(toolMsg);
 
-                // Notify client about tool result
                 controller.enqueue(
                   encoder.encode(
                     `data: ${JSON.stringify({
@@ -177,10 +226,8 @@ export const POST = auth(async (req) => {
                 );
               }
 
-              // Continue loop to get response with tool results
               continue;
             } else {
-              // Final response received
               await MessageRepository.create({
                 conversationId,
                 role: "assistant",
@@ -201,7 +248,6 @@ export const POST = auth(async (req) => {
           }
         }
 
-        // If max iterations reached
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`),
         );

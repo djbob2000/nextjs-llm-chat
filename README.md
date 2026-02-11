@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LLM Chat Workbench
 
-## Getting Started
+A modern chat interface for interacting with various Large Language Models (LLM) via OpenRouter. It supports streaming, conversation history, tool calling, and markdown export.
 
-First, run the development server:
+## Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Streaming Responses**: Get tokens in real-time as they are generated.
+- **Tool Calling**: Assistant can execute functions (e.g., get current time, summarize text).
+- **Markdown & Code**: High-quality text rendering and syntax highlighting with a copy-to-clipboard button.
+- **Flexible Settings**: Change models, adjust temperature, and set system prompts for each chat.
+- **Export**: Save your conversations as Markdown files.
+- **Security**: Built-in authentication (Auth.js), rate limiting, Zod validation, and input sanitization.
+- **Premium UI**: Built with Tailwind CSS, Lucide icons, and shadcn/ui components. Supports dark and light modes.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 15+ (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL (via Prisma ORM)
+- **Styling**: Tailwind CSS (v4)
+- **Authentication**: Auth.js (NextAuth v5)
+- **LLM API**: OpenRouter
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Quick Start
 
-## Learn More
+1. Clone the repository.
+2. Install dependencies: `npm install`.
+3. Set up your environment variables in `.env.local` (Database URL, OpenRouter API Key).
+4. Run database migrations: `npx prisma migrate dev`.
+5. Start the development server: `npm run dev`.
 
-To learn more about Next.js, take a look at the following resources:
+## Additional Information
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is a demonstration of a modern AI application architecture, featuring clearly separated layers (Repositories, Services, Proxy) and a responsive user interface.
