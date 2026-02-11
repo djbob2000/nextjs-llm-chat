@@ -15,6 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ModelSelector } from "./ModelSelector";
 import { TemperatureSlider } from "./TemperatureSlider";
+import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/lib/constants";
+import { useTheme } from "next-themes";
+import { Moon, Sun, Laptop } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SettingsPanelProps {
   initialSettings: {
@@ -35,13 +45,19 @@ export function SettingsPanel({
   onSave,
   disabled,
 }: SettingsPanelProps) {
-  const [model, setModel] = useState(initialSettings.model);
+  const [model, setModel] = useState(() => {
+    const isValid = AVAILABLE_MODELS.some(
+      (m) => m.id === initialSettings.model,
+    );
+    return isValid ? initialSettings.model : DEFAULT_MODEL;
+  });
   const [temperature, setTemperature] = useState(initialSettings.temperature);
   const [systemPrompt, setSystemPrompt] = useState(
     initialSettings.systemPrompt || "",
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -74,7 +90,7 @@ export function SettingsPanel({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="grid gap-6 py-6">
+        <div className="grid gap-6 py-6 px-4">
           <ModelSelector
             value={model}
             onChange={setModel}
@@ -98,6 +114,32 @@ export function SettingsPanel({
               className="h-32 resize-none"
               disabled={isSaving}
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none">Theme</label>
+            <Select value={theme} onValueChange={setTheme}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-4 w-4" /> Light
+                  </div>
+                </SelectItem>
+                <SelectItem value="dark">
+                  <div className="flex items-center gap-2">
+                    <Moon className="h-4 w-4" /> Dark
+                  </div>
+                </SelectItem>
+                <SelectItem value="system">
+                  <div className="flex items-center gap-2">
+                    <Laptop className="h-4 w-4" /> System
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
