@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Message } from "@prisma/client";
+import { useConversations } from "@/contexts/ConversationsContext";
 
 interface Conversation {
   id: string;
@@ -20,6 +21,8 @@ export function useChat(conversationId: string) {
   const [activeToolCalls, setActiveToolCalls] = useState<any[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { updateConversation } = useConversations();
 
   const fetchConversation = useCallback(async () => {
     if (!conversationId) return;
@@ -112,6 +115,28 @@ export function useChat(conversationId: string) {
       abortControllerRef.current = controller;
       setStreamingMessage("");
       setActiveToolCalls([]);
+
+      // Generate title if first message
+      if (messages.length === 0) {
+        fetch("/api/conversations/generate-title", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversationId, content }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Title generated:", data);
+            if (data.title) {
+              // Update local state if we have it
+              if (conversation) {
+                setConversation({ ...conversation, title: data.title });
+              }
+              // Update context
+              updateConversation(conversationId, { title: data.title });
+            }
+          })
+          .catch((err) => console.error("Failed to generate title:", err));
+      }
 
       const response = await fetch("/api/chat", {
         method: "POST",
