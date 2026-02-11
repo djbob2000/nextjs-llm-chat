@@ -27,7 +27,8 @@ A modern chat interface for interacting with various Large Language Models (LLM)
 2. Install dependencies: `npm install`.
 3. Set up your environment variables in `.env.local` (Database URL, OpenRouter API Key).
 4. Run database migrations: `npx prisma migrate dev`.
-5. Start the development server: `npm run dev`.
+5. Seed the database with a default user: `npx prisma db seed`.
+6. Start the development server: `npm run dev`.
 
 ## Additional Information
 

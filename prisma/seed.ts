@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+import prisma from "../src/lib/prisma";
 
 async function main() {
   const email = process.env.DEFAULT_USER_EMAIL || "admin@llmchat.local";

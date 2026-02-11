@@ -9,18 +9,16 @@ import { rateLimit } from "@/lib/rate-limit";
 import { sanitizeContent, MAX_MESSAGES_PER_REQUEST } from "@/lib/sanitize";
 import { z } from "zod";
 
-export const runtime = "edge";
-
 const MAX_ITERATIONS = 5;
 
 const ChatRequestSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: z.string(),
   messages: z.array(
     z.object({
       role: z.enum(["user", "assistant", "system", "tool"]),
       content: z.string().nullable(),
       toolCalls: z.any().optional(),
-      toolCallId: z.string().optional(),
+      toolCallId: z.string().nullable().optional(),
     }),
   ),
   model: z.string().optional(),
@@ -84,8 +82,8 @@ export const POST = auth(async (req) => {
     const llmHistory: ChatMessage[] = messages.map((m) => ({
       role: m.role,
       content: m.content,
-      toolCalls: m.toolCalls,
-      toolCallId: m.toolCallId,
+      toolCalls: m.toolCalls || undefined,
+      toolCallId: m.toolCallId || undefined,
     }));
 
     if (
