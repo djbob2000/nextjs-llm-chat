@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useChat } from "@/hooks/useChat";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { Loader2, Download, Terminal } from "lucide-react";
+import { Loader2, Download, Terminal, Bot } from "lucide-react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ToolCallDisplay } from "./ToolCallDisplay";
 import { SettingsPanel } from "./SettingsPanel";
@@ -112,34 +112,39 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
           {(streamingMessage !== null || activeToolCalls.length > 0) && (
             <div className="flex w-full mb-4 justify-start">
-              <div className="max-w-[80%] rounded-xl px-4 py-3 shadow-sm bg-muted/50 text-foreground border">
-                <div className="text-[10px] font-bold mb-2 tracking-tighter opacity-50 uppercase flex items-center gap-2">
-                  <span className="h-1 w-1 bg-primary rounded-full animate-ping" />
-                  Assistant is thinking
+              <div className="flex gap-3 max-w-[80%] flex-row">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border bg-primary/10 text-primary">
+                  <Bot className="h-5 w-5" />
                 </div>
-
-                {streamingMessage && (
-                  <MarkdownRenderer content={streamingMessage} />
-                )}
-
-                {activeToolCalls.length > 0 && (
-                  <div className="mt-4 space-y-3 pt-4 border-t border-muted-foreground/10">
-                    {activeToolCalls.map((tc, idx) => (
-                      <ToolCallDisplay
-                        key={tc.id || idx}
-                        toolName={tc.function.name}
-                        args={tc.function.arguments}
-                        result={tc.result}
-                        isLoading={!tc.result}
-                      />
-                    ))}
+                <div className="rounded-xl px-4 py-3 shadow-sm bg-secondary text-secondary-foreground min-w-[60px]">
+                  <div className="text-[10px] font-bold mb-2 tracking-tighter opacity-50 uppercase flex items-center gap-2 text-primary">
+                    <span className="h-1 w-1 bg-primary rounded-full animate-ping" />
+                    Assistant is thinking
                   </div>
-                )}
 
-                {!activeToolCalls.some((tc) => !tc.result) &&
-                  streamingMessage !== null && (
-                    <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />
+                  {streamingMessage && (
+                    <MarkdownRenderer content={streamingMessage} />
                   )}
+
+                  {activeToolCalls.length > 0 && (
+                    <div className="mt-4 space-y-3 pt-4 border-t border-border/50">
+                      {activeToolCalls.map((tc, idx) => (
+                        <ToolCallDisplay
+                          key={tc.id || idx}
+                          toolName={tc.function.name}
+                          args={tc.function.arguments}
+                          result={tc.result}
+                          isLoading={!tc.result}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {!activeToolCalls.some((tc) => !tc.result) &&
+                    streamingMessage !== null && (
+                      <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />
+                    )}
+                </div>
               </div>
             </div>
           )}

@@ -49,6 +49,13 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           td({ children }) {
             return <td className="border-b px-4 py-2">{children}</td>;
           },
+          blockquote({ children }) {
+            return (
+              <blockquote className="border-l-2 pl-4 italic my-2 text-xs text-muted-foreground opacity-70">
+                {children}
+              </blockquote>
+            );
+          },
         }}
       >
         {content}

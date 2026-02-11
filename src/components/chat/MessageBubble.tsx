@@ -55,7 +55,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             "rounded-xl px-4 py-3 shadow-sm",
             isUser
               ? "bg-muted text-foreground"
-              : "bg-transparent text-foreground px-0 shadow-none",
+              : "bg-secondary text-secondary-foreground",
             isSystem &&
               "bg-orange-100 text-orange-900 dark:bg-orange-900/20 dark:text-orange-200 border border-orange-200 dark:border-orange-800",
           )}
