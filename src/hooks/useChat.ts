@@ -117,7 +117,7 @@ export function useChat(conversationId: string) {
       setActiveToolCalls([]);
 
       // Generate title if first message
-      if (messages.length === 0) {
+      if (messages.length === 0 && conversation?.title === "New Chat") {
         fetch("/api/conversations/generate-title", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

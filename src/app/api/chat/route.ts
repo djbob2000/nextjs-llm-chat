@@ -104,6 +104,7 @@ export const POST = auth(async (req) => {
       async start(controller) {
         let currentIteration = 0;
         let finalAssistantContent = "";
+        let modelNameSent = false;
 
         while (currentIteration < MAX_ITERATIONS) {
           currentIteration++;
@@ -126,7 +127,6 @@ export const POST = auth(async (req) => {
           let iterationContent = "";
           let toolCalls: any[] = [];
           let isToolCall = false;
-          let modelNameSent = false;
 
           try {
             while (true) {
