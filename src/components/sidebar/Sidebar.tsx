@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Search, Settings, LogOut } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ConversationList } from "./ConversationList";
-import { useConversations } from "@/hooks/useConversations";
+import { useConversations } from "@/contexts/ConversationsContext";
 import { signOut } from "next-auth/react";
 
 export function Sidebar() {

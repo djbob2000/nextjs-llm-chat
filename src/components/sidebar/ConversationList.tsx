@@ -1,6 +1,6 @@
 "use client";
 
-import { useConversations } from "@/hooks/useConversations";
+import { useConversations } from "@/contexts/ConversationsContext";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
