@@ -31,9 +31,6 @@ export default async function ConversationPage({
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <header className="flex h-14 items-center border-b px-6 bg-background/95 backdrop-blur">
-        <h2 className="text-sm font-semibold truncate">{conversation.title}</h2>
-      </header>
       <ChatArea conversationId={conversationId} />
     </div>
   );
