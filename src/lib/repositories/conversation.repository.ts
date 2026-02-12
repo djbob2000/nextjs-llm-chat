@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Conversation } from "@prisma/client";
+import { Conversation, Prisma } from "@prisma/client";
 
 export class ConversationRepository {
   static async create(data: {
@@ -32,22 +32,23 @@ export class ConversationRepository {
     userId: string,
     search?: string,
   ): Promise<Conversation[]> {
+    const where: Prisma.ConversationWhereInput = { userId };
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        {
+          messages: {
+            some: {
+              content: { contains: search, mode: "insensitive" },
+            },
+          },
+        },
+      ];
+    }
+
     return prisma.conversation.findMany({
-      where: {
-        userId,
-        OR: search
-          ? [
-              { title: { contains: search, mode: "insensitive" } },
-              {
-                messages: {
-                  some: {
-                    content: { contains: search, mode: "insensitive" },
-                  },
-                },
-              },
-            ]
-          : undefined,
-      },
+      where,
       orderBy: { updatedAt: "desc" },
     });
   }
