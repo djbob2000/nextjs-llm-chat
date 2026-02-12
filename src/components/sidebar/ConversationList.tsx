@@ -1,6 +1,7 @@
 "use client";
 
 import { useConversations } from "@/contexts/ConversationsContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +11,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export function ConversationList() {
   const { conversations, isLoading, deleteConversation, conversationId } =
     useConversations();
+  const { setIsOpen } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
+  };
 
   if (isLoading && conversations.length === 0) {
     return (
@@ -32,7 +40,7 @@ export function ConversationList() {
       <div className="space-y-1 p-2">
         {conversations.map((conversation) => (
           <div key={conversation.id} className="group relative">
-            <Link href={`/chat/${conversation.id}`}>
+            <Link href={`/chat/${conversation.id}`} onClick={handleLinkClick}>
               <Button
                 variant="ghost"
                 className={cn(

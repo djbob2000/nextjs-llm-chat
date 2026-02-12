@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useChat } from "@/hooks/useChat";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
-import { Loader2, Download, Terminal, Bot } from "lucide-react";
+import { Loader2, Download, Terminal, Bot, PanelLeft } from "lucide-react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ToolCallDisplay } from "./ToolCallDisplay";
 import { SettingsPanel } from "./SettingsPanel";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { downloadAsMarkdown } from "@/lib/export";
 import { Separator } from "@/components/ui/separator";
 import { PromptTemplates } from "./PromptTemplates";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface ChatAreaProps {
   conversationId: string;
@@ -19,6 +20,7 @@ interface ChatAreaProps {
 
 export function ChatArea({ conversationId }: ChatAreaProps) {
   const [inputContent, setInputContent] = useState("");
+  const { toggle, isOpen } = useSidebar();
   const {
     messages,
     conversation,
@@ -49,7 +51,18 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b bg-card shadow-sm z-10">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0">
+          {!isOpen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              className="shrink-0"
+              title="Open sidebar"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 lg:block hidden">
             <Terminal className="h-4 w-4" />
           </div>
           <div className="flex flex-col overflow-hidden">
