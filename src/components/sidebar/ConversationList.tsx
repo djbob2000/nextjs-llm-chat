@@ -11,10 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export function ConversationList() {
   const { conversations, isLoading, deleteConversation, conversationId } =
     useConversations();
-  const { setIsOpen } = useSidebar();
+  const { setIsOpen, isMobile } = useSidebar();
 
   const handleLinkClick = () => {
-    if (window.innerWidth < 1024) {
+    if (isMobile) {
       setIsOpen(false);
     }
   };
