@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Sparkles, FileText, Code2, ShieldAlert } from "lucide-react";
+import { FileText, Code2, ShieldAlert } from "lucide-react";
 
 interface PromptTemplatesProps {
   onSelect: (prompt: string) => void;
@@ -30,7 +30,7 @@ const TEMPLATES = [
 
 export function PromptTemplates({ onSelect }: PromptTemplatesProps) {
   return (
-    <div className="flex flex-wrap gap-2 px-4 pb-2">
+    <div className="flex flex-wrap gap-2 pb-2 justify-center">
       {TEMPLATES.map((template) => (
         <Button
           key={template.label}

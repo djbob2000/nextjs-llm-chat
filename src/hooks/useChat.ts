@@ -116,6 +116,23 @@ export function useChat(conversationId: string) {
       setStreamingMessage("");
       setActiveToolCalls([]);
 
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId,
+          messages: [...messages, userMessage],
+          model: conversation?.model,
+          temperature: conversation?.temperature,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to start chat");
+      }
+
       // Generate title if first message
       if (
         messages.length === 0 &&
@@ -139,23 +156,6 @@ export function useChat(conversationId: string) {
             }
           })
           .catch((err) => console.error("Failed to generate title:", err));
-      }
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId,
-          messages: [...messages, userMessage],
-          model: conversation?.model,
-          temperature: conversation?.temperature,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to start chat");
       }
 
       const reader = response.body?.getReader();
