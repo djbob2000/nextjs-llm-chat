@@ -117,7 +117,10 @@ export function useChat(conversationId: string) {
       setActiveToolCalls([]);
 
       // Generate title if first message
-      if (messages.length === 0 && conversation?.title === "New Chat") {
+      if (
+        messages.length === 0 &&
+        (!conversation?.title || conversation.title === "New Chat")
+      ) {
         fetch("/api/conversations/generate-title", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -128,9 +131,9 @@ export function useChat(conversationId: string) {
             console.log("Title generated:", data);
             if (data.title) {
               // Update local state if we have it
-              if (conversation) {
-                setConversation({ ...conversation, title: data.title });
-              }
+              setConversation((prev) =>
+                prev ? { ...prev, title: data.title } : null,
+              );
               // Update context
               updateConversation(conversationId, { title: data.title });
             }

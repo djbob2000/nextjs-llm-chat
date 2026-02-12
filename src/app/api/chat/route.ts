@@ -48,8 +48,9 @@ export const POST = auth(async (req) => {
     // Zod Validation
     const validation = ChatRequestSchema.safeParse(body);
     if (!validation.success) {
+      console.error("Validation failed:", validation.error.format());
       return NextResponse.json(
-        { error: "Invalid request data", details: validation.error.format() },
+        { error: "Invalid request data" },
         { status: 400 },
       );
     }
@@ -104,7 +105,6 @@ export const POST = auth(async (req) => {
       async start(controller) {
         let currentIteration = 0;
         let finalAssistantContent = "";
-        let modelNameSent = false;
 
         while (currentIteration < MAX_ITERATIONS) {
           currentIteration++;
@@ -143,19 +143,6 @@ export const POST = auth(async (req) => {
 
                   try {
                     const json = JSON.parse(data);
-
-                    // Inject Model Name at the start
-                    if (!modelNameSent && json.model) {
-                      const modelHeader = `> Model: ${json.model}\n\n`;
-                      iterationContent += modelHeader;
-                      finalAssistantContent += modelHeader;
-                      controller.enqueue(
-                        encoder.encode(
-                          `data: ${JSON.stringify({ type: "token", content: modelHeader })}\n\n`,
-                        ),
-                      );
-                      modelNameSent = true;
-                    }
 
                     const delta = json.choices?.[0]?.delta;
 
@@ -285,7 +272,7 @@ export const POST = auth(async (req) => {
   } catch (error: any) {
     console.error("Chat API Error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal Server Error" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

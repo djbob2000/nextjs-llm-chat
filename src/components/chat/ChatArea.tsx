@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { downloadAsMarkdown } from "@/lib/export";
 import { Separator } from "@/components/ui/separator";
 import { PromptTemplates } from "./PromptTemplates";
-import { AVAILABLE_MODELS } from "@/lib/constants";
 
 interface ChatAreaProps {
   conversationId: string;
@@ -43,10 +42,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     setInputContent(prompt);
   };
 
-  const modelName =
-    AVAILABLE_MODELS.find((m) => m.id === conversation?.model)?.name ||
-    conversation?.model ||
-    "Unknown Model";
+  const modelName = conversation?.model || "Unknown Model";
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-background">
@@ -61,7 +57,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
               {conversation?.title || "New Conversation"}
             </h2>
             <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest font-mono">
-              {modelName} • Temp {conversation?.temperature}
+              Model: {modelName} • Temp {conversation?.temperature}
             </p>
           </div>
         </div>

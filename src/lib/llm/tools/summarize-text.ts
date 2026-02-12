@@ -19,6 +19,9 @@ export const summarizeText: ToolHandler = {
     },
   },
   execute: (args: { text: string }) => {
+    if (!args.text || typeof args.text !== "string") {
+      return "Error: The 'text' parameter is required and must be a string.";
+    }
     const sentences = args.text.split(/[.!?]+/).filter(Boolean);
     if (sentences.length <= 2) return args.text;
 

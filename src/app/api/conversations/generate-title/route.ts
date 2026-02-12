@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ConversationRepository } from "@/lib/repositories/conversation.repository";
-import { openRouter } from "@/lib/llm/openrouter";
+
 import { TITLE_GENERATION_MODEL } from "@/lib/constants";
 import { z } from "zod";
 
@@ -26,40 +26,66 @@ export const POST = auth(async (req) => {
     }
 
     // Generate title using LLM
-    const stream = await openRouter.chat({
-      model: TITLE_GENERATION_MODEL, // Fast and cheap model for titles
-      messages: [
-        {
-          role: "system",
-          content:
-            "Generate a short, concise title (max 5 words) for the following conversation. Return ONLY the title, no quotes.",
-        },
-        { role: "user", content },
-      ],
-      temperature: 0.7,
-      maxTokens: 50,
-    });
+    // Generate title using LLM (Non-streaming for simplicity)
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENROUTER_API_KEY is not defined");
+    }
 
-    const reader = stream.getReader();
-    const decoder = new TextDecoder();
     let title = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n");
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") continue;
-          try {
-            const json = JSON.parse(data);
-            const content = json.choices?.[0]?.delta?.content;
-            if (content) title += content;
-          } catch (e) {}
+    // Retry up to 5 times if title is empty
+    for (let i = 0; i < 5; i++) {
+      try {
+        const response = await fetch(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer":
+                process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+              "X-Title": "LLM Chat Workbench",
+            },
+            body: JSON.stringify({
+              model: TITLE_GENERATION_MODEL,
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "Generate a short, concise title (max 5 words) for the following conversation. Return ONLY the title, no quotes.",
+                },
+                { role: "user", content },
+              ],
+              temperature: 0.7,
+              max_tokens: 50,
+              stream: false,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.warn(`Attempt ${i + 1} failed:`, error);
+          continue;
         }
+
+        const json = await response.json();
+        title = json.choices?.[0]?.message?.content || "";
+
+        if (title) {
+          break;
+        }
+      } catch (e) {
+        console.warn(`Attempt ${i + 1} exception:`, e);
       }
+    }
+
+    if (!title) {
+      console.warn("Generated title was empty after 5 attempts.");
+      // Fallback to truncated content
+      title = content.slice(0, 50) + (content.length > 50 ? "..." : "");
     }
 
     title = title.trim().replace(/^["']|["']$/g, "");

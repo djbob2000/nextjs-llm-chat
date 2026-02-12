@@ -2,26 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useConversations } from "@/contexts/ConversationsContext";
 import { useState } from "react";
 
 export default function ChatPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { createConversation } = useConversations();
 
   const handleCreateChat = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "New Chat" }),
-      });
-
-      if (response.ok) {
-        const conversation = await response.json();
-        router.push(`/chat/${conversation.id}`);
-      }
+      await createConversation();
     } catch (error) {
       console.error("Failed to create conversation:", error);
     } finally {
